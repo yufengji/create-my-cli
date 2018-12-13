@@ -30,6 +30,7 @@ class Download {
     let getTagListLoad;
     let repos;
     let version;
+    let downLoadLoad;
     try {
       getProListLoad = this.getProList.start();
       repos = await this.git.getProjectList();
@@ -65,6 +66,32 @@ class Download {
     }
 
     console.log(`您选择的项目是${repo}, 即将下载版本${version}`);
+    // 向用户咨询欲创建项目的目录
+    const repoName = [
+      {
+        type: 'input',
+        name: 'repoPath',
+        message: '请输入项目名称: ',
+        validate(v) {
+          const done = this.async();
+          if (!v.trim()) {
+            done('项目名称不能为空~');
+          }
+          done(null, true);
+        },
+      },
+    ];
+    const { repoPath } = await this.inquirer.prompt(repoName);
+
+    // 下载代码到指定的目录下
+    try {
+      downLoadLoad = this.downLoad.start();
+      await this.git.downloadProject({ repo, version, repoPath });
+      downLoadLoad.succeed('下载代码成功');
+    } catch (error) {
+      console.log(error);
+      downLoadLoad.fail('下载代码失败...');
+    }
   }
 }
 const D = new Download();

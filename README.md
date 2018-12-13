@@ -138,3 +138,61 @@ baseUrl: api.github.com
 - 输入ucar download 得到如下结果
 ![图片](./images/13.png)
 > >其中ucar这个命令是在package.json中bin配置的node命令，通过ucar这个指令启动bin目录下的ucar.js
+
+### 第五步, 收工
+拿到 git 项目信息是重要的一个环节. 然而, 只能拿到信息不能下载下来, 你这脚手架有个🔨用.我们就开始把 git 项目下载下来. 并且把完成的代码发布到 npmjs.com 上
+
+###### 首先安装依赖 download-git-repo
+- npm install download-git-repo -S
+###### 扩充 Git 操作类
+- 完善 Git 类的 downloadProject 方法:
+```
+downloadProject({ repo, version, repoPath }) {
+    return new Promise((resolve, reject) => {
+        download(`${this.orgName}/${repo}#${version}`, repoPath, (err) => {
+        if (err) reject(err);
+        resolve(true);
+        });
+    });
+}
+
+```
+- 优化 command/download.js 文件,
+```
+// 向用户咨询欲创建项目的目录
+const repoName = [
+    {
+    type: 'input',
+    name: 'repoPath',
+    message: '请输入项目名称: ',
+    validate(v) {
+        const done = this.async();
+        if (!v.trim()) {
+        done('项目名称不能为空~');
+        }
+        done(null, true);
+    },
+    },
+];
+const { repoPath } = await this.inquirer.prompt(repoName);
+
+// 下载代码到指定的目录下
+try {
+    downLoadLoad = this.downLoad.start();
+    await this.git.downloadProject({ repo, version, repoPath });
+    downLoadLoad.succeed('下载代码成功');
+} catch (error) {
+    console.log(error);
+    downLoadLoad.fail('下载代码失败...');
+}
+```
+> >增加了向用户询问项目开发目录和调用代码下载功能的逻辑. 至此, 我们已经可以正常的下载模板代码啦.
+
+### 将代码发布到 npm 上
+- 首先, 创建 [npmjs](https://www.npmjs.com/) 账号
+- 再次, 把 npm 镜像替换为官方镜像 重点要考
+> >npm config set registry http://registry.npmjs.org
+- 最后, 来一把 npm publish
+> >没有任何意外的报错了, 但是通过看报错信息, 这是要让我们登录还给出了登录的命令
+- 根据报错信息, 执行 npm adduser
+- 登录后,再次执行 npm publish
