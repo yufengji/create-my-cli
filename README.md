@@ -50,3 +50,25 @@ npm i eslint -D
 - 第二步, 在功能搜索框中输入 autofix
 - 第三步, 勾选Auto Fix On Save
 ![图片](./images/8.png)
+### 第三步, 获取我们上传到 github 上的项目信息
+脚手架, 作为一个工具, 主要是用来搬运我们已经准备好的项目模板(webpack 配置, koa 项目雏形等等), 这一步我们就来创建用于搬运的项目模板. 并通过接口获取相关信息 [github Api](https://developer.github.com/v3/repos/) 文档
+
+#### 创建一个专门用于维护项目模板的项目组（注意这里创建的是项目组即organization而不是repository）
+- 创建好了一个项目组之后比如项目组（organization）,叫learnss-cli-organization
+- 切换到该项目组下新建项目（repository）,比如叫ucar-cli
+- 向创建的项目中添加一个文件, 上传到 github 并打好 tag
+![图片](./images/9.png)
+#### 通过 github 开放 api 获取项目信息
+
+baseUrl: api.github.com
+
+作为一个开发工具, 我们需要获取的项目信息包含以下几个:
+1. 获取组织所属项目列表
+> >我们可以尝试一下获取刚刚创建的 organization 下的项目目录
+> >curl https://api.github.com/orgs/learnss-cli-organization/repos
+![图片](./images/10.png)
+> >拿到这个数组说明我们已经能够获取到项目组中的所有项目啦
+2. 获取指定项目的版本号
+> >通过前一个接口, 我们成功的获取到了项目组中所有的项目信息, 接下来我们可以通过以下接口获取到指定项目的版本信息(就是 tags)
+> >curl https://api.github.com/repos/learn-cli-organization/demo/tags
+![图片](./images/11.png)
