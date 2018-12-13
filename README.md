@@ -45,6 +45,41 @@ npm i eslint -D
 ![图片](./images/6.png)
 - 下一步, 编辑器安装 eslint 插件
 ![图片](./images/7.png)
+
+###### es6兼容
+- 安装依赖
+> >npm i @babel/core@7.1.6 babel-core@^6.26.3 babel-plugin-transform-es2015-modules-commonjs@6.26.2 babel-polyfill@6.26.0 babel-preset-env@1.7.0 babel-preset-latest-node@2.0.2 babel-register@6.26.0 -S
+- 在项目的根目录中添加 .babelrc 在该文件中粘贴以下内容
+```
+{
+    "presets": ["env"],
+    "plugins": ["transform-es2015-modules-commonjs"]
+}
+
+```
+- 在根目录下创建入口文件 index.js 并粘贴以下内容
+```
+require('babel-register');
+const babel = require('@babel/core');
+const babelPresetLatestNode = require('babel-preset-latest-node');
+
+babel.transform('code();', {
+  presets: [[babelPresetLatestNode, {
+    target: 'current',
+  }]],
+});
+
+require('babel-polyfill');
+require('./src');
+
+```
+- 最后改造 bin/ucar.js 内容如下:
+> >
+```
+#!/usr/bin/env node
+require('../'); // 执行入口文件
+
+```
 ###### 开启 vscode 自动修复
 - 第一步, 打开 vscode 配置文件 command + ,
 - 第二步, 在功能搜索框中输入 autofix
@@ -72,3 +107,34 @@ baseUrl: api.github.com
 > >通过前一个接口, 我们成功的获取到了项目组中所有的项目信息, 接下来我们可以通过以下接口获取到指定项目的版本信息(就是 tags)
 > >curl https://api.github.com/repos/learn-cli-organization/demo/tags
 ![图片](./images/11.png)
+### 第四步, 通过代码获取项目信息
+前面我们已经能够获取到命令行中输入的参数, 也能通过 github 开放 api 中获取到项目模板信息, 这里我们开始把之前的功能连缀起来
+
+这里用到的工具较多：
+- 获取命令行指令 commander (npm i commander -S)
+- 命令行交互工具 inquirer (npm i inquirer -S)
+- 命令行显示加载中 ora (npm i ora -S)
+- ajax 封装库 axios (npm i axios -S)
+目录结构如下：
+
+![图片](./images/12.png)
+
+###### 各个文件介绍：
+- bin/ucar.js 
+> >仍然作为项目的引导文件, 直接引入项目根目录下的 index.js
+- index.js 
+> >根目录下的 index 作为项目的入口文件, 它的职责主要是兼容 es6, 并导入项目主文件 src/index.js
+- src/index.js 
+> >这个是项目的主文件, 也是整个程序的总控. 正如注释, 执行命令前, 从这里检测我们的命令目录下是否已经存在了用户请求的命令, 避免了用户误操作程序报错的风险.
+- command/download.js
+> >command 目录下存放的是我们整个项目中所有的命令文件, 不同的命令对应不同的文件, 体现了单一职责的设计. download 命令用到了我们上一节中提到的两个接口(即获取项目列表和获取版本号列表)
+- tools/git.js
+> >此文件是 git 相关的操作的文件, 由于脚手架的核心功能就是获取项目的 github 地址, 并下载, 所以我的 Git 类规划了以上几个功能, 获取项目列表 获取项目版本号列表 获取项目地址 下载项目
+- tools/request.js
+> >这个文件仅仅是对 axios 做了一层简单的封装
+- config/index.js
+> >作为整个项目的配置文件, 承担了保存项目运行过程中需要的配置信息的功能
+
+- 输入ucar download 得到如下结果
+![图片](./images/13.png)
+> >其中ucar这个命令是在package.json中bin配置的node命令，通过ucar这个指令启动bin目录下的ucar.js
